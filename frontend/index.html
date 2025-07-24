@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uber & Lyft Dynamic Pricing - AI Powered</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #000 0%, #333 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .form-container {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #000;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+           -webkit-appearance: none;
+           appearance: none;
+           width: 20px;
+           height: 20px;
+           background: #000;
+           border-radius: 50%;
+           cursor: pointer;
+       }
+       
+       .slider-value {
+           min-width: 40px;
+           text-align: center;
+           font-weight: bold;
+           color: #000;
+       }
+       
+       button {
+           width: 100%;
+           padding: 16px;
+           background: #000;
+           color: white;
+           border: none;
+           border-radius: 8px;
+           font-size: 16px;
+           font-weight: 600;
+           cursor: pointer;
+           transition: background 0.3s;
+       }
+       
+       button:hover {
+           background: #333;
+       }
+       
+       button:disabled {
+           background: #ccc;
+           cursor: not-allowed;
+       }
+       
+       .result {
+           margin-top: 30px;
+           padding: 25px;
+           background: #f8f9fa;
+           border-radius: 8px;
+           display: none;
+       }
+       
+       .result h3 {
+           margin-bottom: 20px;
+           color: #333;
+       }
+       
+       .price-row {
+           display: flex;
+           justify-content: space-between;
+           padding: 10px 0;
+           border-bottom: 1px solid #e0e0e0;
+       }
+       
+       .price-row:last-child {
+           border-bottom: none;
+           font-size: 20px;
+           font-weight: bold;
+           color: #000;
+           padding-top: 15px;
+       }
+       
+       .surge-indicator {
+           display: inline-block;
+           padding: 4px 12px;
+           border-radius: 20px;
+           font-size: 12px;
+           font-weight: 600;
+           margin-left: 10px;
+       }
+       
+       .surge-low {
+           background: #d4edda;
+           color: #155724;
+       }
+       
+       .surge-medium {
+           background: #fff3cd;
+           color: #856404;
+       }
+       
+       .surge-high {
+           background: #f8d7da;
+           color: #721c24;
+       }
+       
+       .recommendation {
+           margin-top: 20px;
+           padding: 15px;
+           background: #e3f2fd;
+           border-radius: 8px;
+           color: #1976d2;
+           font-size: 14px;
+           text-align: center;
+       }
+       
+       .loading {
+           display: none;
+           text-align: center;
+           padding: 20px;
+           color: #666;
+       }
+       
+       .error {
+           display: none;
+           margin-top: 20px;
+           padding: 15px;
+           background: #f8d7da;
+           border-radius: 8px;
+           color: #721c24;
+       }
+       
+   </style>
+</head>
+<body>
+   <div class="container">
+       <div class="header">
+           <h1>Uber Dynamic Pricing</h1>
+           <p>Surge Predictions</p>
+       </div>
+       
+       <div class="form-container">
+           <form id="pricingForm">
+               <div class="form-group">
+                   <label for="distance">Trip Distance (miles)</label>
+                   <input type="number" id="distance" name="distance" value="2.5" min="0.1" max="50" step="0.1" required>
+               </div>
+               
+               <div class="form-group">
+                   <label for="source">Pickup Location</label>
+                   <select id="source" name="source" required>
+                       <option value="Back Bay">Back Bay</option>
+                       <option value="North Station">North Station</option>
+                       <option value="Financial District">Financial District</option>
+                       <option value="South Station">South Station</option>
+                       <option value="Beacon Hill">Beacon Hill</option>
+                       <option value="Boston University">Boston University</option>
+                       <option value="Fenway">Fenway</option>
+                       <option value="Haymarket Square">Haymarket Square</option>
+                       <option value="North End">North End</option>
+                       <option value="Theatre District">Theatre District</option>
+                       <option value="West End">West End</option>
+                       <option value="Northeastern University">Northeastern University</option>
+                   </select>
+               </div>
+               
+               <div class="form-group">
+                   <label for="destination">Dropoff Location</label>
+                   <select id="destination" name="destination" required>
+                       <option value="North Station">North Station</option>
+                       <option value="Back Bay">Back Bay</option>
+                       <option value="South Station">South Station</option>
+                       <option value="Financial District">Financial District</option>
+                       <option value="Boston University">Boston University</option>
+                       <option value="Beacon Hill">Beacon Hill</option>
+                       <option value="Fenway">Fenway</option>
+                       <option value="Haymarket Square">Haymarket Square</option>
+                       <option value="North End">North End</option>
+                       <option value="Theatre District">Theatre District</option>
+                       <option value="West End">West End</option>
+                       <option value="Northeastern University">Northeastern University</option>
+                   </select>
+               </div>
+               
+               <div class="form-group">
+                   <label for="service_type">Service Type</label>
+                   <select id="service_type" name="service_type" required>
+                       <option value="UberX">UberX</option>
+                       <option value="Lyft">Lyft</option>
+                       <option value="UberXL">UberXL</option>
+                       <option value="Lyft XL">Lyft XL</option>
+                       <option value="Black">Uber Black</option>
+                       <option value="Lux Black">Lyft Lux Black</option>
+                       <option value="Black SUV">Uber Black SUV</option>
+                       <option value="Lux Black XL">Lyft Lux Black XL</option>
+                   </select>
+               </div>
+               
+               <div class="form-group">
+                   <label for="hour">Time of Day</label>
+                   <select id="hour" name="hour">
+                       <option value="">Current Time</option>
+                       <option value="6">6:00 AM</option>
+                       <option value="7">7:00 AM - Rush Hour</option>
+                       <option value="8">8:00 AM - Rush Hour</option>
+                       <option value="9">9:00 AM - Rush Hour</option>
+                       <option value="12">12:00 PM - Lunch</option>
+                       <option value="13">1:00 PM - Lunch</option>
+                       <option value="17">5:00 PM - Rush Hour</option>
+                       <option value="18">6:00 PM - Rush Hour</option>
+                       <option value="19">7:00 PM - Rush Hour</option>
+                       <option value="22">10:00 PM - Late Night</option>
+                       <option value="23">11:00 PM - Late Night</option>
+                       <option value="0">12:00 AM - Late Night</option>
+                   </select>
+               </div>
+               
+               <div class="form-group">
+                   <label for="demand">Current Demand Level (Market Activity)</label>
+                   <div class="slider-container">
+                       <input type="range" id="demand" name="demand" min="0" max="100" value="50">
+                       <span class="slider-value" id="demandValue">50</span>
+                   </div>
+               </div>
+               
+               <div class="form-group">
+                   <label for="supply">Driver Supply Level (Driver Availability)</label>
+                   <div class="slider-container">
+                       <input type="range" id="supply" name="supply" min="0" max="100" value="50">
+                       <span class="slider-value" id="supplyValue">50</span>
+                   </div>
+               </div>
+               
+               <button type="submit" id="calculateBtn">Calculate Price</button>
+           </form>
+           
+           <div class="loading">
+               <p>calculating your price...</p>
+           </div>
+           
+           <div class="result" id="result">
+               <h3>Price Prediction</h3>
+               <div class="price-breakdown">
+                   <div class="price-row">
+                       <span>Base Price:</span>
+                       <span id="basePrice">$0.00</span>
+                   </div>
+                   <div class="price-row">
+                       <span>Surge Multiplier:</span>
+                       <span>
+                           <span id="surge">1.0x</span>
+                           <span id="surgeIndicator" class="surge-indicator"></span>
+                       </span>
+                   </div>
+                   <div class="price-row">
+                       <span>Estimated Fare:</span>
+                       <span id="finalPrice">$0.00</span>
+                   </div>
+               </div>
+               <div class="recommendation" id="recommendation"></div>
+           </div>
+           
+           <div class="error" id="error"></div>
+       </div>
+   </div>
+   
+   <script>
+       // Update slider values
+       document.getElementById('demand').oninput = function() {
+           document.getElementById('demandValue').textContent = this.value;
+       }
+       document.getElementById('supply').oninput = function() {
+           document.getElementById('supplyValue').textContent = this.value;
+       }
+       
+       // Form submission
+       document.getElementById('pricingForm').onsubmit = async function(e) {
+           e.preventDefault();
+           
+           // Hide previous results
+           document.getElementById('result').style.display = 'none';
+           document.getElementById('error').style.display = 'none';
+           document.getElementById('calculateBtn').disabled = true;
+           document.querySelector('.loading').style.display = 'block';
+           
+           // Get form data
+           const formData = {
+               distance: parseFloat(document.getElementById('distance').value),
+               source: document.getElementById('source').value,
+               destination: document.getElementById('destination').value,
+               service_type: document.getElementById('service_type').value,
+               current_demand: parseFloat(document.getElementById('demand').value),
+               current_supply: parseFloat(document.getElementById('supply').value)
+           };
+           
+           const hour = document.getElementById('hour').value;
+           if (hour) {
+               formData.hour = parseInt(hour);
+           }
+           
+           try {
+               // CHANGE THIS TO YOUR DEPLOYED API URL
+               const response = await fetch('http://localhost:8000/predict', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                   },
+                   body: JSON.stringify(formData)
+               });
+               
+               if (!response.ok) {
+                   throw new Error('Failed to calculate price');
+               }
+               
+               const result = await response.json();
+               
+               // Display results
+               document.getElementById('basePrice').textContent = `$${result.base_price.toFixed(2)}`;
+               document.getElementById('surge').textContent = `${result.surge_multiplier}x`;
+               document.getElementById('finalPrice').textContent = `$${result.final_price.toFixed(2)}`;
+               document.getElementById('recommendation').textContent = result.recommendation;
+               
+               // Update surge indicator
+               const surgeIndicator = document.getElementById('surgeIndicator');
+               if (result.surge_multiplier >= 2.0) {
+                   surgeIndicator.className = 'surge-indicator surge-high';
+                   surgeIndicator.textContent = 'HIGH';
+               } else if (result.surge_multiplier >= 1.5) {
+                   surgeIndicator.className = 'surge-indicator surge-medium';
+                   surgeIndicator.textContent = 'MEDIUM';
+               } else {
+                   surgeIndicator.className = 'surge-indicator surge-low';
+                   surgeIndicator.textContent = 'LOW';
+               }
+               
+               document.getElementById('result').style.display = 'block';
+               
+           } catch (error) {
+               document.getElementById('error').textContent = 'Error: Could not connect to pricing server. Please try again.';
+               document.getElementById('error').style.display = 'block';
+           } finally {
+               document.querySelector('.loading').style.display = 'none';
+               document.getElementById('calculateBtn').disabled = false;
+           }
+       }
+   </script>
+</body>
+</html>

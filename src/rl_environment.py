@@ -13,18 +13,15 @@ class UberPricingEnv(gym.Env):
         self.base_model = base_price_model
         self.episode_length = episode_length
         
-        # Actions: 7 discrete surge levels
         self.action_space = spaces.Discrete(7)
         self.surge_levels = [1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
         
-        # State space
         self.observation_space = spaces.Box(
             low=np.array([0, 0, 0, 0, 0, 0, 1.0]),
             high=np.array([23, 6, 100, 100, 50, 30, 3.0]),
             dtype=np.float32
         )
         
-        # Metrics tracking
         self.revenue_history = deque(maxlen=1000)
         self.acceptance_history = deque(maxlen=1000)
         self.surge_history = deque(maxlen=1000)
@@ -67,7 +64,6 @@ class UberPricingEnv(gym.Env):
         surge_multiplier = self.surge_levels[action]
         current_ride = self.data.iloc[self.current_index]
         
-        # Calculate base price
         base_features = pd.DataFrame({
             'distance': [current_ride['distance']],
             'service_encoded': [current_ride['service_encoded']],
@@ -77,14 +73,11 @@ class UberPricingEnv(gym.Env):
         })
         base_price = self.base_model.predict(base_features)[0]
         
-        # Final price with surge
         final_price = base_price * surge_multiplier
         
-        # Customer acceptance probability
         price_sensitivity = 0.3
         acceptance_prob = 1.0 / (1 + price_sensitivity * (surge_multiplier - 1)**2)
         
-        # Weather and time adjustments
         if current_ride.get('rain', 0) > 0.1:
             acceptance_prob *= 1.2
         if current_ride['hour'] in [22, 23, 0, 1, 2]:
@@ -93,19 +86,16 @@ class UberPricingEnv(gym.Env):
         acceptance_prob = np.clip(acceptance_prob, 0.1, 0.95)
         ride_accepted = np.random.random() < acceptance_prob
         
-        # Calculate reward
         reward = self._calculate_reward(
             final_price, surge_multiplier, ride_accepted, 
             acceptance_prob, self.current_demand, self.current_supply
         )
-        
-        # Update metrics
+
         if ride_accepted:
             self.episode_revenue += final_price
             self.episode_accepted += 1
         self.episode_rides += 1
         
-        # Update market conditions
         self._update_market_conditions(surge_multiplier, ride_accepted)
         
         self.current_step += 1
@@ -113,7 +103,6 @@ class UberPricingEnv(gym.Env):
         
         done = self.current_step >= self.episode_length
         
-        # Store history
         self.revenue_history.append(final_price if ride_accepted else 0)
         self.acceptance_history.append(ride_accepted)
         self.surge_history.append(surge_multiplier)

@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 
 class SurgePricingEngine:
-    """Surge pricing logic - from your Part 3"""
     def __init__(self, base_model, surge_thresholds=None):
         self.base_model = base_model
         self.surge_thresholds = surge_thresholds or {
@@ -15,15 +14,15 @@ class SurgePricingEngine:
         self.surge_history = []
         
     def calculate_demand_level(self, hour, location, recent_rides, wait_time=None):
-        """Calculate current demand level (0-100)"""
+        
         base_demand = 30
         
-        # Time-based adjustments
-        if hour in [7,8,9,17,18,19]:  # Rush hours
+       
+        if hour in [7,8,9,17,18,19]:  # rush hours
             base_demand += 20
-        elif hour in [22,23,0,1,2]:  # Late night
+        elif hour in [22,23,0,1,2]:  # late night
             base_demand += 15
-        elif hour in [12,13]:  # Lunch
+        elif hour in [12,13]:  #lunch
             base_demand += 10
             
         # Location adjustments
@@ -38,7 +37,7 @@ class SurgePricingEngine:
         return min(base_demand, 100)
     
     def get_surge_multiplier(self, demand_level, supply_level=50):
-        """Determine surge based on demand/supply ratio"""
+        
         ratio = demand_level / supply_level
         
         if ratio < 1.2:

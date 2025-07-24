@@ -13,7 +13,6 @@ from src.surge_engine import SurgePricingEngine
 
 app = FastAPI(title="Uber Dynamic Pricing API")
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,14 +21,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load models
 print("Loading models...")
 base_model = joblib.load("../models/saved_models/base_price_model.pkl")
 encoders = joblib.load("../models/saved_models/encoders.pkl")
 rl_model = PPO.load("../models/saved_models/uber_pricing_rl_model")
 surge_engine = SurgePricingEngine(base_model)
 
-# Request/Response models
 class PredictionRequest(BaseModel):
     distance: float
     source: str
@@ -54,11 +51,10 @@ def root():
 @app.post("/predict", response_model=PredictionResponse)
 async def predict_price(request: PredictionRequest):
     try:
-        # Use current hour if not provided
+       
         if request.hour is None:
             request.hour = pd.Timestamp.now().hour
         
-        # Get surge from RL model
         state = np.array([
             request.hour,
             pd.Timestamp.now().dayofweek,
@@ -80,11 +76,11 @@ async def predict_price(request: PredictionRequest):
             demand_level, request.current_supply
         )
         
-        # For now, use RL surge
+        # For now using   RL surge
         surge_multiplier = rl_surge
         
         # Calculate base price (simplified for demo)
-        # In production, you'd properly encode the categorical variables
+        # In production i will properly encode the categorical variables
         base_price = 2.5 + (request.distance * 1.5)
         
         # Adjust for service type
@@ -102,7 +98,6 @@ async def predict_price(request: PredictionRequest):
         
         final_price = base_price * surge_multiplier
         
-        # Recommendation
         if surge_multiplier >= 2.0:
             recommendation = "High surge - consider waiting if possible"
         elif surge_multiplier >= 1.5:
