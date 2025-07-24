@@ -19,25 +19,23 @@ def load_and_clean_data(rides_path='data/raw/cab_rides.csv',
     return df_clean, df_weather
 
 def create_temporal_features(df):
-
+    """Create time-based features - from your Phase 1 code"""
     df['datetime'] = pd.to_datetime(df['time_stamp'], unit='ms')
     df['hour'] = df['datetime'].dt.hour
     df['day_of_week'] = df['datetime'].dt.dayofweek
     df['is_weekend'] = df['day_of_week'].isin([5, 6]).astype(int)
     df['date'] = df['datetime'].dt.date
-    
+
     df['is_rush_hour'] = df['hour'].isin([7,8,9,17,18,19]).astype(int)
     df['is_late_night'] = df['hour'].isin([22,23,0,1,2,3]).astype(int)
     df['is_lunch_hour'] = df['hour'].isin([12,13]).astype(int)
-    
+
     df['distance_category'] = pd.cut(df['distance'], 
                                      bins=[0, 0.5, 1, 2, 3, 10], 
                                      labels=['very_short', 'short', 'medium', 'long', 'very_long'])
     return df
 
 def merge_weather_data(df_rides, df_weather):
-
-
     df_weather['datetime'] = pd.to_datetime(df_weather['time_stamp'], unit='s')
     df_weather['hour_timestamp'] = df_weather['datetime'].dt.floor('H')
     

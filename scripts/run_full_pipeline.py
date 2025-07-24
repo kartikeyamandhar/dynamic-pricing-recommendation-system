@@ -58,7 +58,7 @@ def main():
         verbose=1
     )
     
-    rl_model.learn(total_timesteps=300000)
+    rl_model.learn(total_timesteps=100000)
     
     rl_model.save("models/saved_models/uber_pricing_rl_model")
     print("\nmodels trained and saved")

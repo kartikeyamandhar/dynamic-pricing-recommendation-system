@@ -5,8 +5,9 @@ import pandas as pd
 import numpy as np
 import joblib
 from stable_baselines3 import PPO
-import sys
-sys.path.append('..')
+import sys,os
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, parent_dir)
 
 from src.config import SURGE_LEVELS
 from src.surge_engine import SurgePricingEngine
@@ -98,6 +99,7 @@ async def predict_price(request: PredictionRequest):
         
         final_price = base_price * surge_multiplier
         
+        # Recommendation
         if surge_multiplier >= 2.0:
             recommendation = "High surge - consider waiting if possible"
         elif surge_multiplier >= 1.5:
