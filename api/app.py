@@ -6,6 +6,8 @@ import numpy as np
 import joblib
 from stable_baselines3 import PPO
 import sys,os
+from pathlib import Path
+
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parent_dir)
 
@@ -23,9 +25,17 @@ app.add_middleware(
 )
 
 print("Loading models...")
-base_model = joblib.load("../models/saved_models/base_price_model.pkl")
-encoders = joblib.load("../models/saved_models/encoders.pkl")
-rl_model = PPO.load("../models/saved_models/uber_pricing_rl_model")
+
+BASE_DIR = Path(__file__).resolve().parent.parent  
+MODEL_DIR = BASE_DIR / "models" / "saved_models"
+
+base_model = joblib.load(MODEL_DIR / "base_price_model.pkl")
+encoders = joblib.load(MODEL_DIR / "encoders.pkl")
+rl_model = PPO.load(str(MODEL_DIR / "uber_pricing_rl_model"))
+
+# base_model = joblib.load("../models/saved_models/base_price_model.pkl")
+# encoders = joblib.load("../models/saved_models/encoders.pkl")
+# rl_model = PPO.load("../models/saved_models/uber_pricing_rl_model")
 surge_engine = SurgePricingEngine(base_model)
 
 class PredictionRequest(BaseModel):
