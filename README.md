@@ -2,6 +2,8 @@
 
 An intelligent pricing system that uses Reinforcement Learning to optimize surge pricing strategies, balancing revenue, customer satisfaction, and driver utilization.
 
+<img width="548" height="950" alt="Image" src="https://github.com/user-attachments/assets/4e58dbba-47b3-4d27-95f1-b25a47e25381" />
+
 ## 🌟 Why This Project is Different
 
 Instead of predicting historical prices, we use **Reinforcement Learning** to learn optimal pricing strategies that balance multiple objectives:
